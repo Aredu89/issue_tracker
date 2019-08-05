@@ -36527,7 +36527,7 @@
 	    value: function componentDidUpdate(prevProps) {
 	      var oldQuery = prevProps.location.query;
 	      var newQuery = this.props.location.query;
-	      if (oldQuery.status === newQuery.status) {
+	      if (oldQuery.status === newQuery.status && oldQuery.effort_gte === newQuery.effort_gte && oldQuery.effort_lte === newQuery.effort_lte) {
 	        return;
 	      }
 	      this.loadData();
@@ -36593,7 +36593,8 @@
 	      return _react2.default.createElement(
 	        'div',
 	        null,
-	        _react2.default.createElement(_IssueFilter2.default, { setFilter: this.setFilter }),
+	        _react2.default.createElement(_IssueFilter2.default, { setFilter: this.setFilter,
+	          initFilter: this.props.location.query }),
 	        _react2.default.createElement('hr', null),
 	        _react2.default.createElement(IssueTable, { issues: this.state.issues }),
 	        _react2.default.createElement('hr', null),
@@ -37255,64 +37256,145 @@
 	var IssueFilter = function (_React$Component) {
 	  _inherits(IssueFilter, _React$Component);
 
-	  function IssueFilter() {
+	  function IssueFilter(props) {
 	    _classCallCheck(this, IssueFilter);
 
-	    var _this = _possibleConstructorReturn(this, (IssueFilter.__proto__ || Object.getPrototypeOf(IssueFilter)).call(this));
+	    var _this = _possibleConstructorReturn(this, (IssueFilter.__proto__ || Object.getPrototypeOf(IssueFilter)).call(this, props));
 
+	    _this.state = {
+	      status: props.initFilter.status || '',
+	      effort_gte: props.initFilter.effort_gte || '',
+	      effort_lte: props.initFilter.effort_lte || '',
+	      changed: false
+	    };
+	    _this.onChangeStatus = _this.onChangeStatus.bind(_this);
+	    _this.onChangeEffortGte = _this.onChangeEffortGte.bind(_this);
+	    _this.onChangeEffortLte = _this.onChangeEffortLte.bind(_this);
+	    _this.applyFilter = _this.applyFilter.bind(_this);
+	    _this.resetFilter = _this.resetFilter.bind(_this);
 	    _this.clearFilter = _this.clearFilter.bind(_this);
-	    _this.setFilterOpen = _this.setFilterOpen.bind(_this);
-	    _this.setFilterAssigned = _this.setFilterAssigned.bind(_this);
 	    return _this;
 	  }
 
 	  _createClass(IssueFilter, [{
-	    key: 'setFilterOpen',
-	    value: function setFilterOpen(e) {
-	      e.preventDefault();
-	      this.props.setFilter({ status: 'Abierto' });
+	    key: 'componentWillReceiveProps',
+	    value: function componentWillReceiveProps(newProps) {
+	      this.setState({
+	        status: newProps.initFilter.status || '',
+	        effort_gte: newProps.initFilter.effort_gte || '',
+	        effort_lte: newProps.initFilter.effort_lte || '',
+	        changed: false
+	      });
 	    }
 	  }, {
-	    key: 'setFilterAssigned',
-	    value: function setFilterAssigned(e) {
-	      e.preventDefault();
-	      this.props.setFilter({ status: 'Asignado' });
+	    key: 'resetFilter',
+	    value: function resetFilter() {
+	      this.setState({
+	        status: this.props.initFilter.status || '',
+	        effort_gte: this.props.initFilter.effort_gte || '',
+	        effort_lte: this.props.initFilter.effort_lte || '',
+	        changed: false
+	      });
+	    }
+	  }, {
+	    key: 'applyFilter',
+	    value: function applyFilter() {
+	      var newFilter = {};
+	      if (this.state.status) newFilter.status = this.state.status;
+	      if (this.state.effort_gte) newFilter.effort_gte = this.state.effort_gte;
+	      if (this.state.effort_lte) newFilter.effort_lte = this.state.effort_lte;
+	      this.props.setFilter(newFilter);
 	    }
 	  }, {
 	    key: 'clearFilter',
-	    value: function clearFilter(e) {
-	      e.preventDefault();
+	    value: function clearFilter() {
 	      this.props.setFilter({});
+	    }
+	  }, {
+	    key: 'onChangeStatus',
+	    value: function onChangeStatus(e) {
+	      this.setState({ status: e.target.value, changed: true });
+	    }
+	  }, {
+	    key: 'onChangeEffortGte',
+	    value: function onChangeEffortGte(e) {
+	      var effortString = e.target.value;
+	      if (effortString.match(/^\d*$/)) {
+	        this.setState({ effort_gte: e.target.value, changed: true });
+	      }
+	    }
+	  }, {
+	    key: 'onChangeEffortLte',
+	    value: function onChangeEffortLte(e) {
+	      var effortString = e.target.value;
+	      if (effortString.match(/^\d*$/)) {
+	        this.setState({ effort_lte: e.target.value, changed: true });
+	      }
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var Separator = function Separator() {
-	        return _react2.default.createElement(
-	          'span',
-	          null,
-	          ' | '
-	        );
-	      };
 	      return _react2.default.createElement(
 	        'div',
 	        null,
+	        'Estado:',
 	        _react2.default.createElement(
-	          'a',
-	          { href: '#', onClick: this.clearFilter },
-	          'Todas las tareas'
+	          'select',
+	          { value: this.state.status, onChange: this.onChangeStatus },
+	          _react2.default.createElement(
+	            'option',
+	            { value: '' },
+	            '(Any)'
+	          ),
+	          _react2.default.createElement(
+	            'option',
+	            { value: 'New' },
+	            'New'
+	          ),
+	          _react2.default.createElement(
+	            'option',
+	            { value: 'Open' },
+	            'Open'
+	          ),
+	          _react2.default.createElement(
+	            'option',
+	            { value: 'Assigned' },
+	            'Assigned'
+	          ),
+	          _react2.default.createElement(
+	            'option',
+	            { value: 'Fixed' },
+	            'Fixed'
+	          ),
+	          _react2.default.createElement(
+	            'option',
+	            { value: 'Verified' },
+	            'Verified'
+	          ),
+	          _react2.default.createElement(
+	            'option',
+	            { value: 'Closed' },
+	            'Closed'
+	          )
 	        ),
-	        _react2.default.createElement(Separator, null),
+	        '\xA0Esfuerzo entre:',
+	        _react2.default.createElement('input', { size: 5, value: this.state.effort_gte, onChange: this.onChangeEffortGte }),
+	        '\xA0-\xA0',
+	        _react2.default.createElement('input', { size: 5, value: this.state.effort_lte, onChange: this.onChangeEffortLte }),
 	        _react2.default.createElement(
-	          'a',
-	          { href: '#', onClick: this.setFilterOpen },
-	          'Tareas abiertas'
+	          'button',
+	          { onClick: this.applyFilter },
+	          'Apply'
 	        ),
-	        _react2.default.createElement(Separator, null),
 	        _react2.default.createElement(
-	          'a',
-	          { href: '#', onClick: this.setFilterAssigned },
-	          ' Tareas Asignadas '
+	          'button',
+	          { onClick: this.resetFilter, disabled: !this.state.changed },
+	          'Reset'
+	        ),
+	        _react2.default.createElement(
+	          'button',
+	          { onClick: this.clearFilter },
+	          'Clear'
 	        )
 	      );
 	    }
@@ -37325,7 +37407,8 @@
 
 
 	IssueFilter.propTypes = {
-	  setFilter: _react2.default.PropTypes.func.isRequired
+	  setFilter: _react2.default.PropTypes.func.isRequired,
+	  initFilter: _react2.default.PropTypes.object.isRequired
 	};
 
 /***/ },
@@ -37346,6 +37429,10 @@
 
 	var _reactRouter = __webpack_require__(503);
 
+	var _NumInput = __webpack_require__(571);
+
+	var _NumInput2 = _interopRequireDefault(_NumInput);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -37360,26 +37447,137 @@
 	  function IssueEdit() {
 	    _classCallCheck(this, IssueEdit);
 
-	    return _possibleConstructorReturn(this, (IssueEdit.__proto__ || Object.getPrototypeOf(IssueEdit)).apply(this, arguments));
+	    var _this = _possibleConstructorReturn(this, (IssueEdit.__proto__ || Object.getPrototypeOf(IssueEdit)).call(this));
+
+	    _this.state = {
+	      issue: {
+	        _id: '', title: '', status: '', owner: '', effort: null,
+	        completionDate: '', created: ''
+	      }
+	    };
+	    _this.onChange = _this.onChange.bind(_this);
+	    return _this;
 	  }
 
 	  _createClass(IssueEdit, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      this.loadData();
+	    }
+	  }, {
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate(prevProps) {
+	      if (prevProps.params.id !== this.props.params.id) {
+	        this.loadData();
+	      }
+	    }
+	  }, {
+	    key: 'onChange',
+	    value: function onChange(event, convertedValue) {
+	      var issue = Object.assign({}, this.state.issue);
+	      var value = convertedVAlue !== indefined ? convertedValue : event.target.value;
+	      issue[event.target.name] = value;
+	      this.setState({ issue: issue });
+	    }
+	  }, {
+	    key: 'loadData',
+	    value: function loadData() {
+	      var _this2 = this;
+
+	      fetch('/api/issues/' + this.props.params.id).then(function (response) {
+	        if (response.ok) {
+	          response.json().then(function (issue) {
+	            issue.created = new Date(issue.created).toDateString();
+	            issue.completionDate = issue.completionDate != null ? new Date(issue.completionDate).toDateString() : '';
+	            issue.effort = issue.effort != null ? issue.effort.toString() : '';
+	            _this2.setState({ issue: issue });
+	          });
+	        } else {
+	          response.json().then(function (error) {
+	            alert('Failed to fetch issue: ' + error.message);
+	          });
+	        }
+	      }).catch(function (err) {
+	        alert('Error in fetching data from server: ' + err.message);
+	      });
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
+	      var issue = this.state.issue;
 	      return _react2.default.createElement(
 	        'div',
 	        null,
 	        _react2.default.createElement(
-	          'p',
+	          'form',
 	          null,
-	          ' This is a placeholder for editing issue ',
-	          this.props.params.id,
-	          '.'
-	        ),
-	        _react2.default.createElement(
-	          _reactRouter.Link,
-	          { to: '/issues' },
-	          'Back to issue list'
+	          'ID: ',
+	          issue._id,
+	          _react2.default.createElement('br', null),
+	          'Created: ',
+	          issue.created,
+	          _react2.default.createElement('br', null),
+	          'Status: ',
+	          _react2.default.createElement(
+	            'select',
+	            { name: 'status', value: issue.status, onChange: this.onChange },
+	            _react2.default.createElement(
+	              'option',
+	              { value: 'New' },
+	              'New'
+	            ),
+	            _react2.default.createElement(
+	              'option',
+	              { value: 'Open' },
+	              'Open'
+	            ),
+	            _react2.default.createElement(
+	              'option',
+	              { value: 'Assigned' },
+	              'Assigned'
+	            ),
+	            _react2.default.createElement(
+	              'option',
+	              { value: 'Fixed' },
+	              'Fixed'
+	            ),
+	            _react2.default.createElement(
+	              'option',
+	              { value: 'Verified' },
+	              'Verified'
+	            ),
+	            _react2.default.createElement(
+	              'option',
+	              { value: 'Closed' },
+	              'Closed'
+	            )
+	          ),
+	          _react2.default.createElement('br', null),
+	          'Owner: ',
+	          _react2.default.createElement('input', { name: 'owner', value: issue.owner, onChange: this.onChange }),
+	          _react2.default.createElement('br', null),
+	          'Effort: ',
+	          _react2.default.createElement(_NumInput2.default, { size: 5, name: 'effort', value: issue.effort, onChange: this.onChange }),
+	          _react2.default.createElement('br', null),
+	          'Completion Date: ',
+	          _react2.default.createElement('input', { name: 'completionDate',
+	            value: issue.completionDate,
+	            onChange: this.onChange
+	          }),
+	          _react2.default.createElement('br', null),
+	          'Title: ',
+	          _react2.default.createElement('input', { name: 'title', size: 50, value: issue.title, onChange: this.onChange }),
+	          _react2.default.createElement('br', null),
+	          _react2.default.createElement(
+	            'button',
+	            { type: 'submit' },
+	            'Submit'
+	          ),
+	          _react2.default.createElement(
+	            _reactRouter.Link,
+	            { to: '/issues' },
+	            'Back to issue list'
+	          )
 	        )
 	      );
 	    }
@@ -37393,6 +37591,97 @@
 
 	IssueEdit.propTypes = {
 	  params: _react2.default.PropTypes.object.isRequired
+	};
+
+/***/ },
+/* 571 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(333);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var NumInput = function (_React$Component) {
+	  _inherits(NumInput, _React$Component);
+
+	  function NumInput(props) {
+	    _classCallCheck(this, NumInput);
+
+	    var _this = _possibleConstructorReturn(this, (NumInput.__proto__ || Object.getPrototypeOf(NumInput)).call(this, props));
+
+	    _this.state = { value: _this.format(props.value) };
+	    _this.onBlur = _this.onBlur.bind(_this);
+	    _this.onChange = _this.onChange.bind(_this);
+	    return _this;
+	  }
+
+	  _createClass(NumInput, [{
+	    key: 'componentWillReceiveProps',
+	    value: function componentWillReceiveProps(newProps) {
+	      this.setState({ value: this.format(newProps.value) });
+	    }
+	  }, {
+	    key: 'onBlur',
+	    value: function onBlur(e) {
+	      this.props.onChange(e, this.unformat(this.state.value));
+	    }
+	  }, {
+	    key: 'onChange',
+	    value: function onChange(e) {
+	      if (e.target.value.match(/^\d*$/)) {
+	        this.setState({ value: e.target.value });
+	      }
+	    }
+	  }, {
+	    key: 'format',
+	    value: function format(num) {
+	      return num != null ? num.toString() : '';
+	    }
+	  }, {
+	    key: 'unformat',
+	    value: function unformat(str) {
+	      var val = parseInt(str, 10);
+	      return isNaN(val) ? null : val;
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement('input', _extends({
+	        type: 'text' }, this.props, {
+	        value: this.state.value,
+	        onBlur: this.onBlur,
+	        onChange: this.onChange
+	      }));
+	    }
+	  }]);
+
+	  return NumInput;
+	}(_react2.default.Component);
+
+	exports.default = NumInput;
+
+
+	NumInput.propTypes = {
+	  value: _react2.default.PropTypes.number,
+	  onChange: _react2.default.PropTypes.func.isRequired
 	};
 
 /***/ }

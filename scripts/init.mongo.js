@@ -7,7 +7,7 @@ db.issues.remove({})
 
 db.issues.insert([
   {
-    status: 'Abierto', 
+    status: 'Open', 
     owner: 'Ravan',
     created: new Date('2016-08-15'), 
     effort: 5, 
@@ -15,12 +15,20 @@ db.issues.insert([
     title: 'Error in console when clicking Add'
   },
   {
-    status: 'Asignado', 
+    status: 'Assigned', 
     owner: 'Eddie',
     created: new Date('2016-08-16'), 
     effort: 14,
     completionDate: new Date('2016-08-30'),
     title: 'Missing bottom border on panel'
+  },
+  {
+    status: 'Fixed', 
+    owner: 'John',
+    created: new Date('2016-08-18'), 
+    effort: 8,
+    completionDate: new Date('2016-08-30'),
+    title: 'Fixing the log messages'
   }
 ])
 
