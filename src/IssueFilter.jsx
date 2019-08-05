@@ -1,19 +1,44 @@
 import React from 'react'
-import { Link } from 'react-router'
 
 export default class IssueFilter extends React.Component {
+  constructor() {
+    super()
+    this.clearFilter = this.clearFilter.bind(this)
+    this.setFilterOpen = this.setFilterOpen.bind(this)
+    this.setFilterAssigned = this.setFilterAssigned.bind(this)
+  }
+
+  setFilterOpen(e) {
+    e.preventDefault()
+    this.props.setFilter({ status: 'Abierto' })
+  }
+
+  setFilterAssigned(e) {
+    e.preventDefault()
+    this.props.setFilter({ status: 'Asignado' })
+  }
+
+  clearFilter(e) {
+    e.preventDefault()
+    this.props.setFilter({})
+  }
+
   render() {
     const Separator = () => <span> | </span>
     return (
       <div>
-        <Link to="/issues">Todas las tareas</Link>
+        <a href="#" onClick={this.clearFilter}>Todas las tareas</a>
         <Separator />
-        <Link to={{ pathname: '/issues', query: { status: 'Abierto' }}}>
+        <a href="#" onClick={this.setFilterOpen}>
           Tareas abiertas
-        </Link>
+        </a>
         <Separator />
-        <Link to="/issues?status=Asignado"> Tareas Asignadas </Link>
+        <a href="#" onClick={this.setFilterAssigned}> Tareas Asignadas </a>
       </div>
     )
   }
+}
+
+IssueFilter.propTypes = {
+  setFilter: React.PropTypes.func.isRequired
 }

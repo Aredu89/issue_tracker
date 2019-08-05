@@ -78,15 +78,59 @@
 	  );
 	};
 
-	//Ruteo
-	var RouteApp = function RouteApp() {
+	var App = function App(props) {
+	  return _react2.default.createElement(
+	    'div',
+	    null,
+	    _react2.default.createElement(
+	      'div',
+	      { className: 'header' },
+	      _react2.default.createElement(
+	        'h1',
+	        null,
+	        'Issue Tracker'
+	      )
+	    ),
+	    _react2.default.createElement(
+	      'div',
+	      { className: 'contents' },
+	      props.children
+	    ),
+	    _react2.default.createElement(
+	      'div',
+	      { className: 'footer' },
+	      'El codigo fuente original se encuentra en: ',
+	      _react2.default.createElement(
+	        'a',
+	        { href: 'https://github.com/vasansr/pro-mern-stack' },
+	        'PRO-MERN'
+	      ),
+	      _react2.default.createElement('br', null),
+	      'El codigo fuente de Ariel Rosales se encuentra en: ',
+	      _react2.default.createElement(
+	        'a',
+	        { href: 'https://github.com/Aredu89/issue_tracker' },
+	        'Issue-Tracker'
+	      )
+	    )
+	  );
+	};
+	App.propTypes = {
+	  children: _react2.default.PropTypes.object.isRequired
+
+	  //Ruteo
+	};var RouteApp = function RouteApp() {
 	  return _react2.default.createElement(
 	    _reactRouter.Router,
-	    { history: _reactRouter.hashHistory },
+	    { history: _reactRouter.browserHistory },
 	    _react2.default.createElement(_reactRouter.Redirect, { from: '/', to: '/issues' }),
-	    _react2.default.createElement(_reactRouter.Route, { path: '/issues', component: _IssueList2.default }),
-	    _react2.default.createElement(_reactRouter.Route, { path: '/issues/:id', component: _IssueEdit2.default }),
-	    _react2.default.createElement(_reactRouter.Route, { path: '*', component: NoMatch })
+	    _react2.default.createElement(
+	      _reactRouter.Route,
+	      { path: '/', component: App },
+	      _react2.default.createElement(_reactRouter.Route, { path: '/issues', component: (0, _reactRouter.withRouter)(_IssueList2.default) }),
+	      _react2.default.createElement(_reactRouter.Route, { path: '/issues/:id', component: _IssueEdit2.default }),
+	      _react2.default.createElement(_reactRouter.Route, { path: '*', component: NoMatch })
+	    )
 	  );
 	};
 
@@ -36469,6 +36513,7 @@
 	    _this.state = { issues: [] };
 
 	    _this.createIssue = _this.createIssue.bind(_this);
+	    _this.setFilter = _this.setFilter.bind(_this);
 	    return _this;
 	  }
 
@@ -36538,17 +36583,17 @@
 	      });
 	    }
 	  }, {
+	    key: 'setFilter',
+	    value: function setFilter(query) {
+	      this.props.router.push({ pathname: this.props.location.pathname, query: query });
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
 	        'div',
 	        null,
-	        _react2.default.createElement(
-	          'h1',
-	          null,
-	          'Issue Tracker'
-	        ),
-	        _react2.default.createElement(_IssueFilter2.default, null),
+	        _react2.default.createElement(_IssueFilter2.default, { setFilter: this.setFilter }),
 	        _react2.default.createElement('hr', null),
 	        _react2.default.createElement(IssueTable, { issues: this.state.issues }),
 	        _react2.default.createElement('hr', null),
@@ -36565,7 +36610,8 @@
 
 
 	IssueList.propTypes = {
-	  location: _react2.default.PropTypes.object.isRequired
+	  location: _react2.default.PropTypes.object.isRequired,
+	  router: _react2.default.PropTypes.object
 	};
 
 /***/ },
@@ -37198,8 +37244,6 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactRouter = __webpack_require__(503);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -37214,10 +37258,33 @@
 	  function IssueFilter() {
 	    _classCallCheck(this, IssueFilter);
 
-	    return _possibleConstructorReturn(this, (IssueFilter.__proto__ || Object.getPrototypeOf(IssueFilter)).apply(this, arguments));
+	    var _this = _possibleConstructorReturn(this, (IssueFilter.__proto__ || Object.getPrototypeOf(IssueFilter)).call(this));
+
+	    _this.clearFilter = _this.clearFilter.bind(_this);
+	    _this.setFilterOpen = _this.setFilterOpen.bind(_this);
+	    _this.setFilterAssigned = _this.setFilterAssigned.bind(_this);
+	    return _this;
 	  }
 
 	  _createClass(IssueFilter, [{
+	    key: 'setFilterOpen',
+	    value: function setFilterOpen(e) {
+	      e.preventDefault();
+	      this.props.setFilter({ status: 'Abierto' });
+	    }
+	  }, {
+	    key: 'setFilterAssigned',
+	    value: function setFilterAssigned(e) {
+	      e.preventDefault();
+	      this.props.setFilter({ status: 'Asignado' });
+	    }
+	  }, {
+	    key: 'clearFilter',
+	    value: function clearFilter(e) {
+	      e.preventDefault();
+	      this.props.setFilter({});
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      var Separator = function Separator() {
@@ -37231,20 +37298,20 @@
 	        'div',
 	        null,
 	        _react2.default.createElement(
-	          _reactRouter.Link,
-	          { to: '/issues' },
+	          'a',
+	          { href: '#', onClick: this.clearFilter },
 	          'Todas las tareas'
 	        ),
 	        _react2.default.createElement(Separator, null),
 	        _react2.default.createElement(
-	          _reactRouter.Link,
-	          { to: { pathname: '/issues', query: { status: 'Abierto' } } },
+	          'a',
+	          { href: '#', onClick: this.setFilterOpen },
 	          'Tareas abiertas'
 	        ),
 	        _react2.default.createElement(Separator, null),
 	        _react2.default.createElement(
-	          _reactRouter.Link,
-	          { to: '/issues?status=Asignado' },
+	          'a',
+	          { href: '#', onClick: this.setFilterAssigned },
 	          ' Tareas Asignadas '
 	        )
 	      );
@@ -37255,6 +37322,11 @@
 	}(_react2.default.Component);
 
 	exports.default = IssueFilter;
+
+
+	IssueFilter.propTypes = {
+	  setFilter: _react2.default.PropTypes.func.isRequired
+	};
 
 /***/ },
 /* 570 */

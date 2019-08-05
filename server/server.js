@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const MongoClient = require('mongodb').MongoClient
 const Issue = require('./issue.js')
+const path = require('path')
 
 const app = express()
 
@@ -62,4 +63,9 @@ app.post('/api/issues', (req,res) => {
       console.log(error)
       res.status(500).json({message: `Error interno del servidor: ${error}`})
     })
+})
+
+// El resto de las rutas (debido a browserHistory)
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve('static/index.html'))
 })
