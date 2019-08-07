@@ -5,21 +5,27 @@ import { Link } from 'react-router'
 import IssueAdd from './IssueAdd.jsx'
 import IssueFilter from './IssueFilter.jsx'
 
-const IssueRow = (props) => (
-  <tr>
-    <td>
-      <Link to={`/issues/${props.issue._id}`}>
-        {props.issue._id.substr(-4)}
-      </Link>
-    </td>
-    <td>{props.issue.status}</td>
-    <td>{props.issue.owner}</td>
-    <td>{props.issue.created.toDateString()}</td>
-    <td>{props.issue.effort}</td>
-    <td>{props.issue.completionDate ? props.issue.completionDate.toDateString() : ''}</td>
-    <td>{props.issue.title}</td>
-  </tr>
-)
+const IssueRow = (props) => {
+  function onDeleteClick() {
+    props.deleteIssue(props.issue._id)
+  }
+  return (
+    <tr>
+      <td>
+        <Link to={`/issues/${props.issue._id}`}>
+          {props.issue._id.substr(-4)}
+        </Link>
+      </td>
+      <td>{props.issue.status}</td>
+      <td>{props.issue.owner}</td>
+      <td>{props.issue.created.toDateString()}</td>
+      <td>{props.issue.effort}</td>
+      <td>{props.issue.completionDate ? props.issue.completionDate.toDateString() : ''}</td>
+      <td>{props.issue.title}</td>
+      <td><button onClick={onDeleteClick}>Delete</button></td>
+    </tr>
+  )
+}
 IssueRow.propTypes = {
   issue_id: React.PropTypes.number.isRequired,
   issue_title: React.PropTypes.string
@@ -29,7 +35,8 @@ IssueRow.defaultProps = {
 }
 
 function IssueTable (props) {
-  const issueRows = props.issues.map(issue => <IssueRow key={issue._id} issue={issue} />)
+  const issueRows = props.issues.map(issue =>
+    <IssueRow key={issue._id} issue={issue} deleteIssue={props.deleteIssue} />)
   return (
     <table className="bordered-table">
       <thead>
@@ -41,6 +48,7 @@ function IssueTable (props) {
           <th>Effort</th>
           <th>Completion Date</th>
           <th>Title</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -57,6 +65,15 @@ export default class IssueList extends React.Component {
 
     this.createIssue = this.createIssue.bind(this)
     this.setFilter = this.setFilter.bind(this)
+    this.deleteIssue = this.deleteIssue.bind(this)
+  }
+
+  deleteIssue(id) {
+    fetch(`/api/issues/${id}`, { method: 'DELETE' })
+      .then(response => {
+        if (!response.ok) alert('Fallo la eliminación de la tarea')
+        else this.loadData()
+      })
   }
 
   componentDidMount() {
@@ -137,7 +154,8 @@ export default class IssueList extends React.Component {
         <IssueFilter setFilter={this.setFilter}
                      initFilter={this.props.location.query} />
         <hr />
-        <IssueTable issues={this.state.issues} />
+        <IssueTable issues={this.state.issues}
+                    deleteIssue={this.deleteIssue} />
         <hr />
         <IssueAdd createIssue={this.createIssue} />
         <hr />
@@ -148,5 +166,6 @@ export default class IssueList extends React.Component {
 
 IssueList.propTypes = {
   location: React.PropTypes.object.isRequired,
-  router: React.PropTypes.object
+  router: React.PropTypes.object,
+  deleteIssue: React.PropTypes.func.isRequired
 }

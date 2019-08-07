@@ -36392,6 +36392,9 @@
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 	var IssueRow = function IssueRow(props) {
+	  function onDeleteClick() {
+	    props.deleteIssue(props.issue._id);
+	  }
 	  return _react2.default.createElement(
 	    'tr',
 	    null,
@@ -36433,6 +36436,15 @@
 	      'td',
 	      null,
 	      props.issue.title
+	    ),
+	    _react2.default.createElement(
+	      'td',
+	      null,
+	      _react2.default.createElement(
+	        'button',
+	        { onClick: onDeleteClick },
+	        'Delete'
+	      )
 	    )
 	  );
 	};
@@ -36446,7 +36458,7 @@
 
 	function IssueTable(props) {
 	  var issueRows = props.issues.map(function (issue) {
-	    return _react2.default.createElement(IssueRow, { key: issue._id, issue: issue });
+	    return _react2.default.createElement(IssueRow, { key: issue._id, issue: issue, deleteIssue: props.deleteIssue });
 	  });
 	  return _react2.default.createElement(
 	    'table',
@@ -36491,7 +36503,8 @@
 	          'th',
 	          null,
 	          'Title'
-	        )
+	        ),
+	        _react2.default.createElement('th', null)
 	      )
 	    ),
 	    _react2.default.createElement(
@@ -36514,10 +36527,20 @@
 
 	    _this.createIssue = _this.createIssue.bind(_this);
 	    _this.setFilter = _this.setFilter.bind(_this);
+	    _this.deleteIssue = _this.deleteIssue.bind(_this);
 	    return _this;
 	  }
 
 	  _createClass(IssueList, [{
+	    key: 'deleteIssue',
+	    value: function deleteIssue(id) {
+	      var _this2 = this;
+
+	      fetch('/api/issues/' + id, { method: 'DELETE' }).then(function (response) {
+	        if (!response.ok) alert('Fallo la eliminación de la tarea');else _this2.loadData();
+	      });
+	    }
+	  }, {
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
 	      this.loadData();
@@ -36535,7 +36558,7 @@
 	  }, {
 	    key: 'loadData',
 	    value: function loadData() {
-	      var _this2 = this;
+	      var _this3 = this;
 
 	      fetch('/api/issues' + this.props.location.search).then(function (response) {
 	        if (response.ok) {
@@ -36545,7 +36568,7 @@
 	              issue.created = new Date(issue.created);
 	              if (issue.completionDate) issue.completionDate = new Date(issue.completionDate);
 	            });
-	            _this2.setState({ issues: data.records });
+	            _this3.setState({ issues: data.records });
 	          });
 	        } else {
 	          response.json().then(function (error) {
@@ -36559,7 +36582,7 @@
 	  }, {
 	    key: 'createIssue',
 	    value: function createIssue(newIssue) {
-	      var _this3 = this;
+	      var _this4 = this;
 
 	      fetch('/api/issues', {
 	        method: 'POST',
@@ -36570,8 +36593,8 @@
 	          response.json().then(function (updatedIssue) {
 	            updatedIssue.created = new Date(updatedIssue.created);
 	            if (updatedIssue.completionDate) updatedIssue.completionDate = new Date(updatedIssue.completionDate);
-	            var newIssues = _this3.state.issues.concat(updatedIssue);
-	            _this3.setState({ issues: newIssues });
+	            var newIssues = _this4.state.issues.concat(updatedIssue);
+	            _this4.setState({ issues: newIssues });
 	          });
 	        } else {
 	          response.json().then(function (error) {
@@ -36596,7 +36619,8 @@
 	        _react2.default.createElement(_IssueFilter2.default, { setFilter: this.setFilter,
 	          initFilter: this.props.location.query }),
 	        _react2.default.createElement('hr', null),
-	        _react2.default.createElement(IssueTable, { issues: this.state.issues }),
+	        _react2.default.createElement(IssueTable, { issues: this.state.issues,
+	          deleteIssue: this.deleteIssue }),
 	        _react2.default.createElement('hr', null),
 	        _react2.default.createElement(_IssueAdd2.default, { createIssue: this.createIssue }),
 	        _react2.default.createElement('hr', null)
@@ -36612,7 +36636,8 @@
 
 	IssueList.propTypes = {
 	  location: _react2.default.PropTypes.object.isRequired,
-	  router: _react2.default.PropTypes.object
+	  router: _react2.default.PropTypes.object,
+	  deleteIssue: _react2.default.PropTypes.func.isRequired
 	};
 
 /***/ },
@@ -37429,10 +37454,6 @@
 
 	var _reactRouter = __webpack_require__(503);
 
-	var _NumInput = __webpack_require__(571);
-
-	var _NumInput2 = _interopRequireDefault(_NumInput);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -37440,6 +37461,9 @@
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	// import NumInput from './NumInput.jsx'
+	// import DateInput from './DateInput.jsx'
 
 	var IssueEdit = function (_React$Component) {
 	  _inherits(IssueEdit, _React$Component);
@@ -37451,15 +37475,46 @@
 
 	    _this.state = {
 	      issue: {
-	        _id: '', title: '', status: '', owner: '', effort: null,
-	        completionDate: '', created: ''
+	        _id: '', title: '', status: '', owner: '', effort: '',
+	        completionDate: null, created: ''
 	      }
 	    };
 	    _this.onChange = _this.onChange.bind(_this);
+	    _this.onSubmit = _this.onSubmit.bind(_this);
 	    return _this;
 	  }
 
 	  _createClass(IssueEdit, [{
+	    key: 'onSubmit',
+	    value: function onSubmit(event) {
+	      var _this2 = this;
+
+	      event.preventDefault();
+
+	      fetch('/api/issues/' + this.props.params.id, {
+	        method: 'PUT',
+	        headers: { 'Content-Type': 'application/json' },
+	        body: JSON.stringify(this.state.issue)
+	      }).then(function (response) {
+	        if (response.ok) {
+	          response.json().then(function (updatedIssue) {
+	            updatedIssue.created = new Date(updatedIssue.created);
+	            if (updatedIssue.completionDate) {
+	              updatedIssue.completionDate = new Date(updatedIssue.completionDate);
+	            }
+	            _this2.setState({ issue: updatedIssue });
+	            alert('La tarea se modificó correctamente');
+	          });
+	        } else {
+	          response.json().then(function (error) {
+	            alert('La modificacion fall\xF3: ' + error.message);
+	          });
+	        }
+	      }).catch(function (err) {
+	        alert('Error al enviar la informacion al servidor: ' + err.message);
+	      });
+	    }
+	  }, {
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
 	      this.loadData();
@@ -37473,24 +37528,23 @@
 	    }
 	  }, {
 	    key: 'onChange',
-	    value: function onChange(event, convertedValue) {
+	    value: function onChange(event) {
 	      var issue = Object.assign({}, this.state.issue);
-	      var value = convertedVAlue !== indefined ? convertedValue : event.target.value;
-	      issue[event.target.name] = value;
+	      issue[event.target.name] = event.target.value;
 	      this.setState({ issue: issue });
 	    }
 	  }, {
 	    key: 'loadData',
 	    value: function loadData() {
-	      var _this2 = this;
+	      var _this3 = this;
 
 	      fetch('/api/issues/' + this.props.params.id).then(function (response) {
 	        if (response.ok) {
 	          response.json().then(function (issue) {
-	            issue.created = new Date(issue.created).toDateString();
-	            issue.completionDate = issue.completionDate != null ? new Date(issue.completionDate).toDateString() : '';
+	            issue.created = new Date(issue.created);
+	            issue.completionDate = issue.completionDate != null ? new Date(issue.completionDate).toDateString() : null;
 	            issue.effort = issue.effort != null ? issue.effort.toString() : '';
-	            _this2.setState({ issue: issue });
+	            _this3.setState({ issue: issue });
 	          });
 	        } else {
 	          response.json().then(function (error) {
@@ -37510,12 +37564,12 @@
 	        null,
 	        _react2.default.createElement(
 	          'form',
-	          null,
+	          { onSubmit: this.onSubmit },
 	          'ID: ',
 	          issue._id,
 	          _react2.default.createElement('br', null),
 	          'Created: ',
-	          issue.created,
+	          issue.created ? issue.created.toDateString() : '',
 	          _react2.default.createElement('br', null),
 	          'Status: ',
 	          _react2.default.createElement(
@@ -37557,7 +37611,7 @@
 	          _react2.default.createElement('input', { name: 'owner', value: issue.owner, onChange: this.onChange }),
 	          _react2.default.createElement('br', null),
 	          'Effort: ',
-	          _react2.default.createElement(_NumInput2.default, { size: 5, name: 'effort', value: issue.effort, onChange: this.onChange }),
+	          _react2.default.createElement('input', { size: 5, name: 'effort', value: issue.effort, onChange: this.onChange, required: true }),
 	          _react2.default.createElement('br', null),
 	          'Completion Date: ',
 	          _react2.default.createElement('input', { name: 'completionDate',
@@ -37591,97 +37645,6 @@
 
 	IssueEdit.propTypes = {
 	  params: _react2.default.PropTypes.object.isRequired
-	};
-
-/***/ },
-/* 571 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(333);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var NumInput = function (_React$Component) {
-	  _inherits(NumInput, _React$Component);
-
-	  function NumInput(props) {
-	    _classCallCheck(this, NumInput);
-
-	    var _this = _possibleConstructorReturn(this, (NumInput.__proto__ || Object.getPrototypeOf(NumInput)).call(this, props));
-
-	    _this.state = { value: _this.format(props.value) };
-	    _this.onBlur = _this.onBlur.bind(_this);
-	    _this.onChange = _this.onChange.bind(_this);
-	    return _this;
-	  }
-
-	  _createClass(NumInput, [{
-	    key: 'componentWillReceiveProps',
-	    value: function componentWillReceiveProps(newProps) {
-	      this.setState({ value: this.format(newProps.value) });
-	    }
-	  }, {
-	    key: 'onBlur',
-	    value: function onBlur(e) {
-	      this.props.onChange(e, this.unformat(this.state.value));
-	    }
-	  }, {
-	    key: 'onChange',
-	    value: function onChange(e) {
-	      if (e.target.value.match(/^\d*$/)) {
-	        this.setState({ value: e.target.value });
-	      }
-	    }
-	  }, {
-	    key: 'format',
-	    value: function format(num) {
-	      return num != null ? num.toString() : '';
-	    }
-	  }, {
-	    key: 'unformat',
-	    value: function unformat(str) {
-	      var val = parseInt(str, 10);
-	      return isNaN(val) ? null : val;
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      return _react2.default.createElement('input', _extends({
-	        type: 'text' }, this.props, {
-	        value: this.state.value,
-	        onBlur: this.onBlur,
-	        onChange: this.onChange
-	      }));
-	    }
-	  }]);
-
-	  return NumInput;
-	}(_react2.default.Component);
-
-	exports.default = NumInput;
-
-
-	NumInput.propTypes = {
-	  value: _react2.default.PropTypes.number,
-	  onChange: _react2.default.PropTypes.func.isRequired
 	};
 
 /***/ }

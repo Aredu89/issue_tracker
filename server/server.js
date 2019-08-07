@@ -45,7 +45,7 @@ app.get('/api/issues', (req, res) => {
     })
 })
 
-//GET Una issue
+//GET Un issue
 app.get('/api/issues/:id', (req, res) => {
   let issueId
   try {
@@ -88,6 +88,58 @@ app.post('/api/issues', (req,res) => {
     .catch(error => {
       console.log(error)
       res.status(500).json({message: `Error interno del servidor: ${error}`})
+    })
+})
+
+//PUT modificar registro
+app.put('/api/issues/:id', (req, res) => {
+  let issueId
+  try {
+    issueId = new ObjectID(req.params.id)
+  } catch (error) {
+    res.status(422).json({message: `Formato de ID invalido: ${error}`})
+    return
+  }
+
+  const issue = req.body
+  delete issue._id
+
+  const err = Issue.validateIssue(issue)
+  if (err) {
+    res.status(422).json({ message: `Formatos de fecha invalidos: ${err}` })
+    return
+  }
+
+  db.collection('issues').update({ _id: issueId },Issue.convertIssue(issue)).then(() =>
+    db.collection('issues').find({ _id: issueId }).limit(1)
+    .next()
+  )
+    .then(savedIssue => {
+      res.json(savedIssue)
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(500).json({ message: `Error interno del servidor: ${error}` })
+    })
+})
+
+// DELETE eliminar registro
+app.delete('/api/issues/:id', (req, res) => {
+  let issueId
+  try {
+    issueId = new ObjectID(req.params.id)
+  } catch (error) {
+    res.status(422).json({ message: `ID invalido: ${error}` })
+    return
+  }
+  db.collection('issues').deleteOne({ _id: issueId })
+    .then((deleteResult) => {
+      if (deleteResult.result.n === 1) res.json({ status: 'OK' })
+      else res.json({ status: 'Warning: object not found' })
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(500).json({ message: `Error interno del servidor: ${error} `})
     })
 })
 

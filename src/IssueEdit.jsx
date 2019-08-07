@@ -1,17 +1,50 @@
 import React from 'react'
 import { Link } from 'react-router'
-import NumInput from './NumInput.jsx'
+// import NumInput from './NumInput.jsx'
+// import DateInput from './DateInput.jsx'
 
 export default class IssueEdit extends React.Component {
   constructor() {
     super()
     this.state = {
       issue: {
-      _id: '', title: '', status: '', owner: '', effort: null,
-      completionDate: '', created: ''
+      _id: '', title: '', status: '', owner: '', effort: '',
+      completionDate: null, created: ''
       }
     }
     this.onChange = this.onChange.bind(this)
+    this.onSubmit = this.onSubmit.bind(this)
+  }
+
+  onSubmit(event) {
+    event.preventDefault()
+
+    fetch(`/api/issues/${this.props.params.id}`, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(this.state.issue)
+    })
+      .then(response => {
+        if (response.ok) {
+          response.json()
+            .then(updatedIssue => {
+              updatedIssue.created = new Date(updatedIssue.created)
+              if (updatedIssue.completionDate) {
+                updatedIssue.completionDate = new Date(updatedIssue.completionDate)
+              }
+              this.setState({issue: updatedIssue})
+              alert('La tarea se modificó correctamente')
+            })
+        } else {
+          response.json()
+            .then(error => {
+              alert(`La modificacion falló: ${error.message}`)
+            })
+        }
+      })
+      .catch(err => {
+        alert(`Error al enviar la informacion al servidor: ${err.message}`)
+      })
   }
 
   componentDidMount() {
@@ -24,10 +57,9 @@ export default class IssueEdit extends React.Component {
     }
   }
 
-  onChange(event, convertedValue) {
+  onChange(event) {
     const issue = Object.assign({}, this.state.issue)
-    const value = (convertedVAlue !== indefined) ? convertedValue : event.target.value
-    issue[event.target.name] = value
+    issue[event.target.name] = event.target.value
     this.setState({ issue })
   }
 
@@ -37,9 +69,9 @@ export default class IssueEdit extends React.Component {
         if (response.ok) {
           response.json()
           .then(issue => {
-            issue.created = new Date(issue.created).toDateString()
+            issue.created = new Date(issue.created)
             issue.completionDate = issue.completionDate != null ?
-            new Date(issue.completionDate).toDateString() : ''
+            new Date(issue.completionDate).toDateString() : null
             issue.effort = issue.effort != null ? issue.effort.toString() : ''
             this.setState({ issue })
           })
@@ -56,13 +88,13 @@ export default class IssueEdit extends React.Component {
   }
 
   render() {
-    const issue = this.state.issue;
+    const issue = this.state.issue
     return (
     <div>
-      <form>
+      <form onSubmit={this.onSubmit}>
         ID: {issue._id}
         <br />
-        Created: {issue.created}
+        Created: {issue.created ? issue.created.toDateString() : ''}
         <br />
         Status: <select name="status" value={issue.status} onChange={this.onChange}>
           <option value="New">New</option>
@@ -75,7 +107,7 @@ export default class IssueEdit extends React.Component {
         <br />
         Owner: <input name="owner" value={issue.owner} onChange={this.onChange} />
         <br />
-        Effort: <NumInput size={5} name="effort" value={issue.effort} onChange={this.onChange} />
+        Effort: <input size={5} name="effort" value={issue.effort} onChange={this.onChange} required />
         <br />
         Completion Date: <input name="completionDate" 
                                 value={issue.completionDate}
