@@ -2,6 +2,8 @@ import 'babel-polyfill'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Router, Route, Redirect, browserHistory, withRouter } from 'react-router'
+import { Provider } from 'react-redux'
+import { store } from './redux/store/index.js'
 
 import IssueList from './IssueList.jsx'
 import IssueEdit from './IssueEdit.jsx'
@@ -31,14 +33,16 @@ App.propTypes = {
 
 //Ruteo
 const RouteApp = () => (
-  <Router history={browserHistory} >
-    <Redirect from="/" to="/issues" />
-    <Route path="/" component={App} >
-      <Route path="/issues" component={withRouter(IssueList)} />
-      <Route path="/issues/:id" component={IssueEdit} />
-      <Route path="*" component={NoMatch} />
-    </Route>
-  </Router>
+  <Provider store={store}>
+    <Router history={browserHistory} >
+      <Redirect from="/" to="/issues" />
+      <Route path="/" component={App} >
+        <Route path="/issues" component={withRouter(IssueList)} />
+        <Route path="/issues/:id" component={IssueEdit} />
+        <Route path="*" component={NoMatch} />
+      </Route>
+    </Router>
+  </Provider>
 )
 
 ReactDOM.render(<RouteApp />, contentNode)

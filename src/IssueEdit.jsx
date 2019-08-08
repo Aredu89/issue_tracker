@@ -1,7 +1,5 @@
 import React from 'react'
 import { Link } from 'react-router'
-// import NumInput from './NumInput.jsx'
-// import DateInput from './DateInput.jsx'
 
 export default class IssueEdit extends React.Component {
   constructor() {

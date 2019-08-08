@@ -62,9 +62,9 @@ export default class DateInput extends React.Component {
   }
 }
 
-DateInput.propTypes = {
+/*DateInput.propTypes = {
   value: React.PropTypes.object,
   onChange: React.PropTypes.func.isRequired,
   onValidityChange: React.PropTypes.func,
   name: React.PropTypes.string.isRequired
-}
+}*/
